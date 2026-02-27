@@ -79,7 +79,7 @@ Copy `.env.example` to `.env` and set values:
 | `PORT` | No | API port | `5000` |
 | `NODE_ENV` | No | Runtime mode (`development`, `test`, `production`) | `development` |
 | `MONGO_URI` | Yes | MongoDB connection string | - |
-| `ALLOWED_ORIGIN` | Yes | Allowed CORS origin | - |
+| `ALLOWED_ORIGIN` | Yes | Allowed CORS origin (Vite dev: `http://localhost:5173`) | - |
 | `RATE_LIMIT_WINDOW_MS` | No | Global rate-limit window (ms) | `900000` |
 | `RATE_LIMIT_MAX` | No | Global max requests per window | `100` |
 | `JWT_SECRET` | Yes | HMAC secret for token signing (32+ chars) | - |
