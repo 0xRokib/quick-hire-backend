@@ -16,7 +16,11 @@ import { morganStream } from './utils/logger.js';
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: env.ALLOWED_ORIGIN }));
+app.use(
+  cors({
+    origin: env.NODE_ENV === 'production' ? env.ALLOWED_ORIGIN : '*',
+  }),
+);
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
 if (env.NODE_ENV === 'production') {
