@@ -43,7 +43,8 @@ cp .env.example .env
 | ALLOWED_ORIGIN       | CORS allowed origin               | http://localhost:3000               |
 | RATE_LIMIT_WINDOW_MS | Rate limit window (ms)            | 900000                              |
 | RATE_LIMIT_MAX       | Max requests per window           | 100                                 |
-| ADMIN_KEY            | Admin authentication key (>= 32c) | —                                   |
+| JWT_SECRET           | HMAC secret for auth token signing| —                                   |
+| JWT_EXPIRES_IN       | Auth token TTL (e.g. 7d, 12h)     | 7d                                  |
 | LOG_LEVEL            | Winston log level                 | info                                |
 
 ## Running Locally
@@ -63,6 +64,10 @@ npm test
 | Method | Path                            | Auth   | Description                          |
 | ------ | ------------------------------- | ------ | ------------------------------------ |
 | GET    | /api/v1/health                  | Public | Health check                         |
+| POST   | /api/v1/auth/register           | Public | Register new user (first can be admin) |
+| POST   | /api/v1/auth/login              | Public | Login and receive bearer token       |
+| GET    | /api/v1/auth/me                 | User   | Get current authenticated user        |
+| GET    | /api/v1/auth/users              | Admin  | List users (admin-only, role check)   |
 | GET    | /api/v1/jobs                    | Public | List all active jobs (search/filter) |
 | GET    | /api/v1/jobs/:id                | Public | Get single job details               |
 | POST   | /api/v1/jobs                    | Admin  | Create a new job listing             |

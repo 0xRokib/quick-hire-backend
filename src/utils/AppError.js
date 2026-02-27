@@ -1,2 +1,11 @@
 // src/utils/AppError.js — Custom error class
-// TODO: Extend Error with statusCode and isOperational properties
+export class AppError extends Error {
+  constructor(message, statusCode) {
+    super(message);
+    this.statusCode = statusCode;
+    this.isOperational = true;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export default AppError;

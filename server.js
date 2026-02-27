@@ -1,7 +1,7 @@
 // server.js — Entry point: imports the Express app and starts listening
 import app from './src/app.js';
 import { connectDB } from './src/config/db.js';
-import './src/config/env.js';
+import { env } from './src/config/env.js';
 import logger from './src/utils/logger.js';
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -14,7 +14,7 @@ process.on('uncaughtException', (error) => {
   process.exit(1);
 });
 
-const PORT = process.env.PORT || 5001;
+const PORT = env.PORT;
 
 connectDB()
   .then(() => {
