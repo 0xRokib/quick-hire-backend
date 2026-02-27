@@ -95,6 +95,13 @@ quickhire-backend/
 │   │   ├── db.js
 │   │   └── env.js
 │   ├── modules/
+│   │   ├── auth/
+│   │   │   ├── user.model.js
+│   │   │   ├── auth.schema.js
+│   │   │   ├── auth.service.js
+│   │   │   ├── auth.controller.js
+│   │   │   ├── auth.routes.js
+│   │   │   └── index.js
 │   │   ├── jobs/
 │   │   │   ├── job.model.js
 │   │   │   ├── job.schema.js
@@ -112,12 +119,15 @@ quickhire-backend/
 │   ├── middleware/
 │   │   ├── errorHandler.js
 │   │   ├── notFound.js
+│   │   ├── auth.js
 │   │   ├── adminAuth.js
 │   │   └── validate.js
 │   ├── utils/
 │   │   ├── apiResponse.js
 │   │   ├── AppError.js
-│   │   └── logger.js
+│   │   ├── logger.js
+│   │   ├── password.js
+│   │   └── token.js
 │   └── app.js
 ├── tests/
 │   ├── setup.js
