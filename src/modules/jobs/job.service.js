@@ -42,7 +42,7 @@ export const getAllJobs = async (query) => {
 
   const [total, jobs] = await Promise.all([
     Job.countDocuments(filters),
-    Job.find(filters).sort(sort).skip(skip).limit(limit),
+    Job.find(filters).populate("applicationCount").sort(sort).skip(skip).limit(limit),
   ]);
 
   return {
@@ -55,7 +55,7 @@ export const getAllJobs = async (query) => {
 };
 
 export const getJobById = async (id) => {
-  const job = await Job.findOne({ _id: id, isActive: true });
+  const job = await Job.findOne({ _id: id, isActive: true }).populate("applicationCount");
   if (!job) {
     throw new AppError("Job not found", 404);
   }

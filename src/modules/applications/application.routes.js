@@ -1,13 +1,62 @@
-// src/modules/applications/application.routes.js — Express router for Application endpoints
+// src/modules/applications/application.routes.js — Express routers for Application endpoints
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
+import adminAuth from "../../middleware/adminAuth.js";
+import validate from "../../middleware/validate.js";
+import * as applicationController from "./application.controller.js";
+import {
+  applicationIdParamSchema,
+  applicationsByJobParamSchema,
+  createApplicationSchema,
+  listApplicationsQuerySchema,
+  updateApplicationStatusSchema,
+} from "./application.schema.js";
 
-const router = Router();
+const applicationsRouter = Router();
+const jobApplicationsRouter = Router();
 
-// TODO: Define routes:
-//   POST   /                        → validate(createApplicationSchema)               → createApplication
-//   GET    /                        → adminAuth → getAllApplications
-//   GET    /:id                     → adminAuth → validate(applicationIdParamSchema)   → getApplicationById
-//   PATCH  /:id/status              → adminAuth → validate(updateApplicationStatusSchema) → updateApplicationStatus
-// NOTE: GET /api/v1/jobs/:id/applications is mounted in job routes or app.js
+const applyLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    error: "Too many applications submitted. Try again later.",
+  },
+});
 
-export default router;
+applicationsRouter.post(
+  "/",
+  applyLimiter,
+  validate(createApplicationSchema),
+  applicationController.createApplication,
+);
+applicationsRouter.get(
+  "/",
+  adminAuth,
+  validate(listApplicationsQuerySchema),
+  applicationController.getAllApplications,
+);
+applicationsRouter.get(
+  "/:id",
+  adminAuth,
+  validate(applicationIdParamSchema),
+  applicationController.getApplicationById,
+);
+applicationsRouter.patch(
+  "/:id/status",
+  adminAuth,
+  validate(updateApplicationStatusSchema),
+  applicationController.updateApplicationStatus,
+);
+
+jobApplicationsRouter.get(
+  "/jobs/:id/applications",
+  adminAuth,
+  validate(applicationsByJobParamSchema),
+  applicationController.getApplicationsByJobId,
+);
+
+export { jobApplicationsRouter };
+export default applicationsRouter;

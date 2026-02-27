@@ -1,4 +1,5 @@
 // src/modules/applications/index.js — Module barrel export
-import applicationRoutes from "./application.routes.js";
+import applicationsRouter, { jobApplicationsRouter } from "./application.routes.js";
 
-export default applicationRoutes;
+export { jobApplicationsRouter };
+export default applicationsRouter;

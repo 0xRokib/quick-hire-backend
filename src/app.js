@@ -7,7 +7,7 @@ import rateLimit from "express-rate-limit";
 import { env } from "./config/env.js";
 import authRouter from "./modules/auth/index.js";
 import jobsRouter from "./modules/jobs/index.js";
-import applicationsRouter from "./modules/applications/index.js";
+import applicationsRouter, { jobApplicationsRouter } from "./modules/applications/index.js";
 import notFound from "./middleware/notFound.js";
 import errorHandler from "./middleware/errorHandler.js";
 
@@ -36,6 +36,7 @@ healthRouter.get("/", (_req, res) => {
 
 app.use("/api/v1/jobs", jobsRouter);
 app.use("/api/v1/applications", applicationsRouter);
+app.use("/api/v1", jobApplicationsRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/health", healthRouter);
 app.use(notFound);
