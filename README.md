@@ -86,6 +86,67 @@ npm test
 | GET    | /api/v1/jobs/:id/applications   | Admin  | Get applications for a job           |
 | PATCH  | /api/v1/applications/:id/status | Admin  | Update application status            |
 
+## Applications Feature
+
+### Submit Application (Public)
+
+`POST /api/v1/applications`
+
+Request body:
+
+```json
+{
+  "job": "665f1a2b3c4d5e6f7a8b9c0d",
+  "name": "Jane Doe",
+  "email": "jane@example.com",
+  "resumeLink": "https://cdn.example.com/jane-resume.pdf",
+  "coverNote": "I am excited to apply for this role."
+}
+```
+
+Validation rules:
+- `job` must be a valid MongoDB ObjectId.
+- `name` must be 2-120 characters.
+- `email` must be valid email format.
+- `resumeLink` must be a valid `http/https` URL.
+- `coverNote` is optional (max 2000 chars).
+
+Business rules:
+- The target job must exist.
+- The target job must be active (`isActive === true`).
+- Duplicate applications by same `email` to same `job` are blocked.
+
+Rate limiting:
+- Apply endpoint has stricter limiter: `20 requests / 15 minutes` per IP.
+
+### Admin Application Management
+
+Admin-only endpoints (Bearer access token with `admin` role):
+- `GET /api/v1/applications`
+- `GET /api/v1/applications/:id`
+- `PATCH /api/v1/applications/:id/status`
+- `GET /api/v1/jobs/:id/applications`
+
+`GET /api/v1/applications` supports query filters:
+- `job` (ObjectId)
+- `status` (`Pending`, `Reviewed`, `Rejected`, `Hired`)
+- `email`
+- `page`, `limit`, `order`
+
+Status update payload:
+
+```json
+{
+  "status": "Reviewed"
+}
+```
+
+Common error responses:
+- `409` Duplicate apply: `"You have already applied to this job."`
+- `422` Invalid payload or inactive job apply
+- `404` Job/application not found
+- `401/403` Missing token or insufficient role for admin routes
+
 ## Folder Structure
 
 ```
