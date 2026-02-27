@@ -43,8 +43,13 @@ cp .env.example .env
 | ALLOWED_ORIGIN       | CORS allowed origin               | http://localhost:3000               |
 | RATE_LIMIT_WINDOW_MS | Rate limit window (ms)            | 900000                              |
 | RATE_LIMIT_MAX       | Max requests per window           | 100                                 |
-| JWT_SECRET           | HMAC secret for auth token signing| —                                   |
-| JWT_EXPIRES_IN       | Auth token TTL (e.g. 7d, 12h)     | 7d                                  |
+| JWT_SECRET           | HMAC secret for auth token signing | —                                   |
+| JWT_ACCESS_EXPIRES_IN| Access token TTL (e.g. 15m)        | 15m                                 |
+| JWT_REFRESH_EXPIRES_IN| Refresh token TTL (e.g. 7d)       | 7d                                  |
+| AUTH_LOGIN_WINDOW_MS | Login rate-limit window (ms)       | 900000                              |
+| AUTH_LOGIN_MAX_REQUESTS | Max login requests/IP per window| 20                                  |
+| AUTH_ACCOUNT_MAX_FAILURES | Failed password attempts before lock | 5                            |
+| AUTH_ACCOUNT_LOCK_MS | Account lock duration after failures (ms) | 900000                    |
 | LOG_LEVEL            | Winston log level                 | info                                |
 
 ## Running Locally
@@ -66,6 +71,8 @@ npm test
 | GET    | /api/v1/health                  | Public | Health check                         |
 | POST   | /api/v1/auth/register           | Public | Register new user (first can be admin) |
 | POST   | /api/v1/auth/login              | Public | Login and receive bearer token       |
+| POST   | /api/v1/auth/refresh            | Public | Rotate refresh token and issue new access token |
+| POST   | /api/v1/auth/logout             | User   | Clear active refresh token           |
 | GET    | /api/v1/auth/me                 | User   | Get current authenticated user        |
 | GET    | /api/v1/auth/users              | Admin  | List users (admin-only, role check)   |
 | GET    | /api/v1/jobs                    | Public | List all active jobs (search/filter) |

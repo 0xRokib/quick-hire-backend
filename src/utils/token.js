@@ -18,10 +18,10 @@ const base64UrlDecode = (value) => JSON.parse(Buffer.from(value, 'base64url').to
 const createSignature = (value) =>
   crypto.createHmac('sha256', env.JWT_SECRET).update(value).digest('base64url');
 
-const parseExpiresIn = (value) => {
+export const parseExpiresIn = (value) => {
   const matched = EXPIRES_IN_PATTERN.exec(value);
   if (!matched) {
-    throw new AppError('Invalid JWT_EXPIRES_IN format in environment', 500);
+    throw new AppError('Invalid token expiration format in environment', 500);
   }
 
   const amount = Number(matched[1]);
@@ -31,12 +31,15 @@ const parseExpiresIn = (value) => {
   return amount * multiplier;
 };
 
-export const signAuthToken = (payload) => {
+export const signAuthToken = (
+  payload,
+  { tokenType = 'access', expiresIn = env.JWT_ACCESS_EXPIRES_IN } = {},
+) => {
   const now = Math.floor(Date.now() / 1000);
-  const exp = now + parseExpiresIn(env.JWT_EXPIRES_IN);
+  const exp = now + parseExpiresIn(expiresIn);
 
   const header = base64UrlEncode({ alg: 'HS256', typ: 'JWT' });
-  const body = base64UrlEncode({ ...payload, iat: now, exp });
+  const body = base64UrlEncode({ ...payload, typ: tokenType, iat: now, exp });
   const unsignedToken = `${header}.${body}`;
   const signature = createSignature(unsignedToken);
 

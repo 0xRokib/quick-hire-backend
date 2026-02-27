@@ -12,7 +12,7 @@ export const protect = async (req, _res, next) => {
 
     const token = authHeader.slice(7).trim();
     const payload = verifyAuthToken(token);
-    if (!payload.sub) {
+    if (!payload.sub || payload.typ !== 'access') {
       throw new AppError('Invalid authentication token payload', 401);
     }
 

@@ -33,6 +33,23 @@ const userSchema = new mongoose.Schema(
       default: 'user',
       index: true,
     },
+    loginFailures: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
+    lockUntil: {
+      type: Date,
+      select: false,
+    },
+    refreshTokenHash: {
+      type: String,
+      select: false,
+    },
+    refreshTokenExpiresAt: {
+      type: Date,
+      select: false,
+    },
   },
   { timestamps: true },
 );
