@@ -36,7 +36,10 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
   message: { success: false, error: 'Too many requests, please slow down.' },
 });
-app.use(apiLimiter);
+
+// if (env.NODE_ENV === 'production') {
+//   app.use(apiLimiter);
+// }
 
 const healthRouter = express.Router();
 
