@@ -86,6 +86,38 @@ npm test
 | GET    | /api/v1/jobs/:id/applications   | Admin  | Get applications for a job           |
 | PATCH  | /api/v1/applications/:id/status | Admin  | Update application status            |
 
+## Role & Access Behavior
+
+### Public (No Token Required)
+
+- Browse jobs: `GET /api/v1/jobs`
+- View job detail: `GET /api/v1/jobs/:id`
+- Submit application: `POST /api/v1/applications`
+- Auth entry points: `POST /api/v1/auth/register`, `POST /api/v1/auth/login`, `POST /api/v1/auth/refresh`
+
+### Authenticated User (Bearer Access Token)
+
+- View own profile: `GET /api/v1/auth/me`
+- Logout / invalidate refresh session: `POST /api/v1/auth/logout`
+
+### Admin (Bearer Access Token + `role=admin`)
+
+- List users: `GET /api/v1/auth/users`
+- Manage jobs: `POST /api/v1/jobs`, `PATCH /api/v1/jobs/:id`, `DELETE /api/v1/jobs/:id`
+- Manage applications: `GET /api/v1/applications`, `GET /api/v1/applications/:id`, `PATCH /api/v1/applications/:id/status`, `GET /api/v1/jobs/:id/applications`
+
+### Admin Bootstrap Rule
+
+- First account can register as admin by sending `"role": "admin"` to `/api/v1/auth/register`.
+- After at least one user exists, admin self-registration is blocked.
+
+### Token & Login Security Behavior
+
+- Access tokens are used for protected routes (`Authorization: Bearer <accessToken>`).
+- Refresh tokens are used only at `POST /api/v1/auth/refresh` and are rotated on refresh.
+- `POST /api/v1/auth/login` has IP rate limiting.
+- Repeated wrong-password logins trigger temporary account lockout.
+
 ## Applications Feature
 
 ### Submit Application (Public)
