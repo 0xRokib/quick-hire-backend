@@ -13,9 +13,12 @@ const validate = (schema) => (req, res, next) => {
       field: error.path.join('.'),
       message: error.message,
     }));
+    const hasInvalidObjectIdError = result.error.errors.some((error) =>
+      /invalid mongo(db)? objectid|invalid job id/i.test(error.message),
+    );
 
     return errorResponse(res, {
-      statusCode: 422,
+      statusCode: hasInvalidObjectIdError ? 400 : 422,
       error: "Validation failed",
       details,
     });

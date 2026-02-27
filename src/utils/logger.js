@@ -9,9 +9,14 @@ const transports = [];
 if (env.NODE_ENV === "production") {
   const logsDir = path.resolve("logs");
   fs.mkdirSync(logsDir, { recursive: true });
+
   transports.push(
     new winston.transports.File({
-      filename: path.join(logsDir, "app.log"),
+      filename: path.join(logsDir, "combined.log"),
+    }),
+    new winston.transports.File({
+      filename: path.join(logsDir, "error.log"),
+      level: "error",
     }),
   );
 } else {
@@ -27,5 +32,11 @@ const logger = winston.createLogger({
   ),
   transports,
 });
+
+export const morganStream = {
+  write: (message) => {
+    logger.info(message.trim());
+  },
+};
 
 export default logger;
