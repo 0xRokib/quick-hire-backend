@@ -1,244 +1,277 @@
 # QuickHire Backend
 
-QuickHire is a mini job board platform. This is the RESTful API backend responsible for managing job listings, accepting candidate applications, and exposing a clean, well-validated JSON interface.
+Production-oriented REST API for a mini job board.  
+Built with Express.js, MongoDB/Mongoose, Zod validation, and role-based authentication.
+
+## Status
+
+- Core backend features are implemented: auth, jobs, applications, role-based admin controls.
+- Middleware and operational pieces are in place: validation, centralized error handling, health check, logging, rate limiting.
+- Test files exist as scaffolds and should be completed before production rollout.
+
+## Core Features
+
+- Role-based authentication (`public`, `user`, `admin`) with access and refresh tokens.
+- Admin bootstrap protection (first account can be admin; later admin self-registration is blocked).
+- Jobs API with search, filtering, sorting, pagination, and soft-delete.
+- Applications API with duplicate prevention (`job + email`), status workflow, and admin review endpoints.
+- Standardized API response format for success, pagination, and errors.
+- Security middleware: `helmet`, scoped `cors`, global and route-specific rate limiting.
+- Health endpoint with DB connectivity, uptime, and timestamp.
+- Structured logging with Morgan + Winston (`combined.log`, `error.log` in production).
 
 ## Tech Stack
 
-- **Runtime:** Node.js (>= 18 LTS)
-- **Framework:** Express.js ^4.18
-- **Database:** MongoDB ^7.0 (via Mongoose ^8.x)
-- **Validation:** Zod ^3.x
-- **Security:** Helmet, CORS, express-rate-limit
-- **Logging:** Morgan + Winston
-- **Testing:** Jest + Supertest + mongodb-memory-server
-- **Dev Tooling:** Nodemon, ESLint, Prettier
+| Category | Technology |
+| --- | --- |
+| Runtime | Node.js 18+ |
+| Framework | Express.js |
+| Database | MongoDB + Mongoose |
+| Validation | Zod |
+| Security | helmet, cors, express-rate-limit |
+| Logging | morgan, winston |
+| Testing | Jest, Supertest, mongodb-memory-server |
+| Tooling | Nodemon, ESLint, Prettier |
+
+## Architecture
+
+Feature-first modular structure:
+
+- Each module owns model, schema, service, controller, routes.
+- Controllers are thin request/response handlers.
+- Services hold business logic and database operations.
+- Shared cross-cutting code lives in `config/`, `middleware/`, and `utils/`.
 
 ## Prerequisites
 
-- Node.js >= 18
-- MongoDB (local) or MongoDB Atlas account
-- npm or yarn
+- Node.js `>=18`
+- npm
+- MongoDB (local or Atlas)
 
-## Installation
+## Quick Start
 
 ```bash
 git clone <repository-url>
 cd quickhire-backend
 npm install
-```
-
-## Environment Setup
-
-Copy `.env.example` to `.env` and fill in your values:
-
-```bash
 cp .env.example .env
-```
-
-| Variable             | Description                       | Default                             |
-| -------------------- | --------------------------------- | ----------------------------------- |
-| PORT                 | Server port                       | 5000                                |
-| NODE_ENV             | Environment                       | development                         |
-| MONGO_URI            | MongoDB connection string         | mongodb://localhost:27017/quickhire |
-| ALLOWED_ORIGIN       | CORS allowed origin               | http://localhost:3000               |
-| RATE_LIMIT_WINDOW_MS | Rate limit window (ms)            | 900000                              |
-| RATE_LIMIT_MAX       | Max requests per window           | 100                                 |
-| JWT_SECRET           | HMAC secret for auth token signing | —                                   |
-| JWT_ACCESS_EXPIRES_IN| Access token TTL (e.g. 15m)        | 15m                                 |
-| JWT_REFRESH_EXPIRES_IN| Refresh token TTL (e.g. 7d)       | 7d                                  |
-| AUTH_LOGIN_WINDOW_MS | Login rate-limit window (ms)       | 900000                              |
-| AUTH_LOGIN_MAX_REQUESTS | Max login requests/IP per window| 20                                  |
-| AUTH_ACCOUNT_MAX_FAILURES | Failed password attempts before lock | 5                            |
-| AUTH_ACCOUNT_LOCK_MS | Account lock duration after failures (ms) | 900000                    |
-| LOG_LEVEL            | Winston log level                 | info                                |
-
-## Running Locally
-
-```bash
 npm run dev
 ```
 
-## Running Tests
+Server default URL: `http://localhost:5000`
 
-```bash
-npm test
-```
+## Scripts
 
-## API Endpoints
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Run with nodemon |
+| `npm start` | Run production entrypoint |
+| `npm test` | Run tests |
+| `npm run lint` | Run ESLint |
+| `npm run format` | Run Prettier |
 
-| Method | Path                            | Auth   | Description                          |
-| ------ | ------------------------------- | ------ | ------------------------------------ |
-| GET    | /api/v1/health                  | Public | Health check                         |
-| POST   | /api/v1/auth/register           | Public | Register new user (first can be admin) |
-| POST   | /api/v1/auth/login              | Public | Login and receive bearer token       |
-| POST   | /api/v1/auth/refresh            | Public | Rotate refresh token and issue new access token |
-| POST   | /api/v1/auth/logout             | User   | Clear active refresh token           |
-| GET    | /api/v1/auth/me                 | User   | Get current authenticated user        |
-| GET    | /api/v1/auth/users              | Admin  | List users (admin-only, role check)   |
-| GET    | /api/v1/jobs                    | Public | List all active jobs (search/filter) |
-| GET    | /api/v1/jobs/:id                | Public | Get single job details               |
-| POST   | /api/v1/jobs                    | Admin  | Create a new job listing             |
-| PATCH  | /api/v1/jobs/:id                | Admin  | Update a job listing                 |
-| DELETE | /api/v1/jobs/:id                | Admin  | Soft-delete a job listing            |
-| POST   | /api/v1/applications            | Public | Submit an application                |
-| GET    | /api/v1/applications            | Admin  | List all applications                |
-| GET    | /api/v1/applications/:id        | Admin  | Get single application               |
-| GET    | /api/v1/jobs/:id/applications   | Admin  | Get applications for a job           |
-| PATCH  | /api/v1/applications/:id/status | Admin  | Update application status            |
+## Environment Variables
 
-## Role & Access Behavior
+Copy `.env.example` to `.env` and set values:
 
-### Public (No Token Required)
+| Variable | Required | Description | Default |
+| --- | --- | --- | --- |
+| `PORT` | No | API port | `5000` |
+| `NODE_ENV` | No | Runtime mode (`development`, `test`, `production`) | `development` |
+| `MONGO_URI` | Yes | MongoDB connection string | - |
+| `ALLOWED_ORIGIN` | Yes | Allowed CORS origin | - |
+| `RATE_LIMIT_WINDOW_MS` | No | Global rate-limit window (ms) | `900000` |
+| `RATE_LIMIT_MAX` | No | Global max requests per window | `100` |
+| `JWT_SECRET` | Yes | HMAC secret for token signing (32+ chars) | - |
+| `JWT_ACCESS_EXPIRES_IN` | No | Access token TTL (e.g. `15m`) | `15m` |
+| `JWT_REFRESH_EXPIRES_IN` | No | Refresh token TTL (e.g. `7d`) | `7d` |
+| `AUTH_LOGIN_WINDOW_MS` | No | Login limiter window (ms) | `900000` |
+| `AUTH_LOGIN_MAX_REQUESTS` | No | Max login requests per IP per window | `20` |
+| `AUTH_ACCOUNT_MAX_FAILURES` | No | Failed logins before lockout | `5` |
+| `AUTH_ACCOUNT_LOCK_MS` | No | Account lock duration (ms) | `900000` |
+| `LOG_LEVEL` | No | Winston log level | `info` |
 
-- Browse jobs: `GET /api/v1/jobs`
-- View job detail: `GET /api/v1/jobs/:id`
-- Submit application: `POST /api/v1/applications`
-- Auth entry points: `POST /api/v1/auth/register`, `POST /api/v1/auth/login`, `POST /api/v1/auth/refresh`
+## Authentication and Roles
 
-### Authenticated User (Bearer Access Token)
+### Role Behavior
 
-- View own profile: `GET /api/v1/auth/me`
-- Logout / invalidate refresh session: `POST /api/v1/auth/logout`
+- `public`: browse jobs, view job details, submit applications, register/login/refresh.
+- `user`: everything public + `GET /auth/me` + logout.
+- `admin`: everything user + manage jobs, review/manage applications, list users.
 
-### Admin (Bearer Access Token + `role=admin`)
+### Token Flow
 
-- List users: `GET /api/v1/auth/users`
-- Manage jobs: `POST /api/v1/jobs`, `PATCH /api/v1/jobs/:id`, `DELETE /api/v1/jobs/:id`
-- Manage applications: `GET /api/v1/applications`, `GET /api/v1/applications/:id`, `PATCH /api/v1/applications/:id/status`, `GET /api/v1/jobs/:id/applications`
+1. Login/register returns `accessToken` and `refreshToken`.
+2. Use `Authorization: Bearer <accessToken>` for protected routes.
+3. Use `POST /api/v1/auth/refresh` with `refreshToken` to rotate tokens.
+4. Use `POST /api/v1/auth/logout` to invalidate refresh session.
 
-### Admin Bootstrap Rule
+### Login Protection
 
-- First account can register as admin by sending `"role": "admin"` to `/api/v1/auth/register`.
-- After at least one user exists, admin self-registration is blocked.
+- IP-based limiter on login route.
+- Temporary account lockout after repeated failed passwords.
 
-### Token & Login Security Behavior
+## API Response Contract
 
-- Access tokens are used for protected routes (`Authorization: Bearer <accessToken>`).
-- Refresh tokens are used only at `POST /api/v1/auth/refresh` and are rotated on refresh.
-- `POST /api/v1/auth/login` has IP rate limiting.
-- Repeated wrong-password logins trigger temporary account lockout.
-
-## Applications Feature
-
-### Submit Application (Public)
-
-`POST /api/v1/applications`
-
-Request body:
+### Success
 
 ```json
 {
-  "job": "665f1a2b3c4d5e6f7a8b9c0d",
-  "name": "Jane Doe",
-  "email": "jane@example.com",
-  "resumeLink": "https://cdn.example.com/jane-resume.pdf",
-  "coverNote": "I am excited to apply for this role."
+  "success": true,
+  "data": {}
 }
 ```
 
-Validation rules:
-- `job` must be a valid MongoDB ObjectId.
-- `name` must be 2-120 characters.
-- `email` must be valid email format.
-- `resumeLink` must be a valid `http/https` URL.
-- `coverNote` is optional (max 2000 chars).
-
-Business rules:
-- The target job must exist.
-- The target job must be active (`isActive === true`).
-- Duplicate applications by same `email` to same `job` are blocked.
-
-Rate limiting:
-- Apply endpoint has stricter limiter: `20 requests / 15 minutes` per IP.
-
-### Admin Application Management
-
-Admin-only endpoints (Bearer access token with `admin` role):
-- `GET /api/v1/applications`
-- `GET /api/v1/applications/:id`
-- `PATCH /api/v1/applications/:id/status`
-- `GET /api/v1/jobs/:id/applications`
-
-`GET /api/v1/applications` supports query filters:
-- `job` (ObjectId)
-- `status` (`Pending`, `Reviewed`, `Rejected`, `Hired`)
-- `email`
-- `page`, `limit`, `order`
-
-Status update payload:
+### Paginated List
 
 ```json
 {
-  "status": "Reviewed"
+  "success": true,
+  "count": 10,
+  "pagination": {
+    "total": 42,
+    "page": 1,
+    "limit": 10,
+    "pages": 5
+  },
+  "data": []
 }
 ```
 
-Common error responses:
-- `409` Duplicate apply: `"You have already applied to this job."`
-- `422` Invalid payload or inactive job apply
-- `404` Job/application not found
-- `401/403` Missing token or insufficient role for admin routes
+### Error
+
+```json
+{
+  "success": false,
+  "error": "Validation failed",
+  "details": []
+}
+```
+
+## Endpoint Reference
+
+### Auth
+
+| Method | Path | Access | Description |
+| --- | --- | --- | --- |
+| `POST` | `/api/v1/auth/register` | Public | Register user (first user may set `role=admin`) |
+| `POST` | `/api/v1/auth/login` | Public | Login and receive tokens |
+| `POST` | `/api/v1/auth/refresh` | Public | Rotate refresh and access tokens |
+| `POST` | `/api/v1/auth/logout` | User/Admin | Logout and clear refresh session |
+| `GET` | `/api/v1/auth/me` | User/Admin | Current authenticated user |
+| `GET` | `/api/v1/auth/users` | Admin | List users |
+
+### Jobs
+
+| Method | Path | Access | Description |
+| --- | --- | --- | --- |
+| `GET` | `/api/v1/jobs` | Public | List active jobs |
+| `GET` | `/api/v1/jobs/:id` | Public | Job details |
+| `POST` | `/api/v1/jobs` | Admin | Create job |
+| `PATCH` | `/api/v1/jobs/:id` | Admin | Update job |
+| `DELETE` | `/api/v1/jobs/:id` | Admin | Soft-delete job |
+
+### Applications
+
+| Method | Path | Access | Description |
+| --- | --- | --- | --- |
+| `POST` | `/api/v1/applications` | Public | Submit application |
+| `GET` | `/api/v1/applications` | Admin | List applications |
+| `GET` | `/api/v1/applications/:id` | Admin | Application details |
+| `PATCH` | `/api/v1/applications/:id/status` | Admin | Update application status |
+| `GET` | `/api/v1/jobs/:id/applications` | Admin | List applications for a job |
+
+### Health
+
+| Method | Path | Access | Description |
+| --- | --- | --- | --- |
+| `GET` | `/api/v1/health` | Public | Service and DB health |
+
+## Query Parameters
+
+### `GET /api/v1/jobs`
+
+- `q`: full-text search
+- `category`: category filter
+- `location`: case-insensitive location filter
+- `type`: job type filter
+- `page`: default `1`
+- `limit`: default `10`, max `50`
+- `sortBy`: `createdAt` or `title`
+- `order`: `asc` or `desc`
+
+### `GET /api/v1/applications` (Admin)
+
+- `job`: job ObjectId
+- `status`: `Pending | Reviewed | Rejected | Hired`
+- `email`: applicant email
+- `page`: default `1`
+- `limit`: default `10`, max `50`
+- `order`: `asc` or `desc`
+
+## Validation and Error Behavior
+
+- Validation errors return `422` by default.
+- Invalid ObjectId-style validation returns `400`.
+- Duplicate key conflicts return `409`.
+- Missing/invalid auth returns `401`.
+- Permission violations return `403`.
+- Not found returns `404`.
+
+## Security and Rate Limits
+
+- `helmet()` enabled globally.
+- CORS restricted to `ALLOWED_ORIGIN`.
+- Global rate limiting from `RATE_LIMIT_*`.
+- Additional apply limiter on `POST /api/v1/applications` (`20/15m`).
+- Login-specific limiter on `POST /api/v1/auth/login`.
+
+## Logging and Health
+
+### Logging
+
+- Development: console logging.
+- Production: HTTP logs via Morgan `combined` piped to Winston.
+- Production: app logs stored in `logs/combined.log`.
+- Production: error logs stored in `logs/error.log`.
+
+### Health Endpoint
+
+`GET /api/v1/health` response includes:
+
+- `status`
+- `db` connection state (`connected` / `disconnected`)
+- `uptime`
+- `timestamp`
 
 ## Folder Structure
 
-```
+```text
 quickhire-backend/
 ├── src/
 │   ├── config/
-│   │   ├── db.js
-│   │   └── env.js
+│   ├── middleware/
 │   ├── modules/
 │   │   ├── auth/
-│   │   │   ├── user.model.js
-│   │   │   ├── auth.schema.js
-│   │   │   ├── auth.service.js
-│   │   │   ├── auth.controller.js
-│   │   │   ├── auth.routes.js
-│   │   │   └── index.js
 │   │   ├── jobs/
-│   │   │   ├── job.model.js
-│   │   │   ├── job.schema.js
-│   │   │   ├── job.service.js
-│   │   │   ├── job.controller.js
-│   │   │   ├── job.routes.js
-│   │   │   └── index.js
 │   │   └── applications/
-│   │       ├── application.model.js
-│   │       ├── application.schema.js
-│   │       ├── application.service.js
-│   │       ├── application.controller.js
-│   │       ├── application.routes.js
-│   │       └── index.js
-│   ├── middleware/
-│   │   ├── errorHandler.js
-│   │   ├── notFound.js
-│   │   ├── auth.js
-│   │   ├── adminAuth.js
-│   │   └── validate.js
 │   ├── utils/
-│   │   ├── apiResponse.js
-│   │   ├── AppError.js
-│   │   ├── logger.js
-│   │   ├── password.js
-│   │   └── token.js
 │   └── app.js
 ├── tests/
-│   ├── setup.js
-│   ├── jobs/
-│   │   ├── jobs.routes.test.js
-│   │   └── jobs.service.test.js
-│   └── applications/
-│       ├── applications.routes.test.js
-│       └── applications.service.test.js
 ├── .env.example
-├── .eslintrc.json
-├── .prettierrc
-├── .gitignore
 ├── package.json
-├── server.js
-└── README.md
+└── server.js
 ```
+
+## Deployment Checklist
+
+- Set `NODE_ENV=production`.
+- Configure all required environment variables.
+- Point `MONGO_URI` to production DB.
+- Set strict `ALLOWED_ORIGIN` to frontend domain.
+- Ensure logs directory is writable in deployment environment.
+- Complete and pass test suite before release.
 
 ## Live Demo
 
-> _Coming soon_
+Coming soon.
