@@ -1,4 +1,6 @@
 // src/middleware/validate.js — Zod schema middleware runner
+import { errorResponse } from "../utils/apiResponse.js";
+
 const validate = (schema) => (req, res, next) => {
   const result = schema.safeParse({
     body: req.body,
@@ -12,9 +14,9 @@ const validate = (schema) => (req, res, next) => {
       message: error.message,
     }));
 
-    return res.status(422).json({
-      success: false,
-      error: 'Validation failed',
+    return errorResponse(res, {
+      statusCode: 422,
+      error: "Validation failed",
       details,
     });
   }

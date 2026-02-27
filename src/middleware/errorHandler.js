@@ -1,6 +1,7 @@
 // src/middleware/errorHandler.js — Central error-handling middleware
 import { env } from '../config/env.js';
 import logger from '../utils/logger.js';
+import { errorResponse } from "../utils/apiResponse.js";
 
 // eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => {
@@ -27,10 +28,12 @@ const errorHandler = (err, req, res, next) => {
 
   logger.error({ status, message, stack: err?.stack });
 
-  res.status(status).json({
-    success: false,
+  return errorResponse(res, {
+    statusCode: status,
     error: message,
-    ...(env.NODE_ENV === 'development' && { stack: err?.stack }),
+    extra: {
+      ...(env.NODE_ENV === 'development' && { stack: err?.stack }),
+    },
   });
 };
 
