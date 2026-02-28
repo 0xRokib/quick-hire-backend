@@ -5,8 +5,8 @@ import express from 'express';
 import helmet from 'helmet';
 import mongoose from 'mongoose';
 import morgan from 'morgan';
-import { connectDB } from './config/db.js';
 import { env } from './config/env.js';
+import dbConnectionMiddleware from './middleware/dbConnection.js';
 import errorHandler from './middleware/errorHandler.js';
 import notFound from './middleware/notFound.js';
 import applicationsRouter, { jobApplicationsRouter } from './modules/applications/index.js';
@@ -14,9 +14,13 @@ import authRouter from './modules/auth/index.js';
 import jobsRouter from './modules/jobs/index.js';
 import { morganStream } from './utils/logger.js';
 
-connectDB();
+// Redundant top-level call removed.
+// connectDB() is now handled by a per-request middleware to ensure connection is ready for serverless.
 
 const app = express();
+
+// Ensure DB is connected before every request
+app.use(dbConnectionMiddleware);
 
 app.use(helmet());
 app.use(
