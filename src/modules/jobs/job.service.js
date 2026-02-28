@@ -1,14 +1,16 @@
 // src/modules/jobs/job.service.js — DB queries & business logic for Jobs
-import AppError from "../../utils/AppError.js";
-import Job from "./job.model.js";
+import AppError from '../../utils/AppError.js';
+import Job from './job.model.js';
 
-const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const buildJobFilters = ({ q, category, location, type }) => {
   const filters = { isActive: true };
 
   if (q) {
-    filters.$text = { $search: q };
+    const safeQ = escapeRegex(q);
+    const regex = { $regex: safeQ, $options: 'i' };
+    filters.$or = [{ title: regex }, { company: regex }, { description: regex }];
   }
 
   if (category) {
@@ -20,7 +22,7 @@ const buildJobFilters = ({ q, category, location, type }) => {
   }
 
   if (location) {
-    filters.location = { $regex: escapeRegex(location), $options: "i" };
+    filters.location = { $regex: escapeRegex(location), $options: 'i' };
   }
 
   return filters;
@@ -28,21 +30,29 @@ const buildJobFilters = ({ q, category, location, type }) => {
 
 const validateSalaryRange = (salaryMin, salaryMax) => {
   if (salaryMin != null && salaryMax != null && salaryMax < salaryMin) {
-    throw new AppError("salaryMax must be greater than or equal to salaryMin", 422);
+    throw new AppError('salaryMax must be greater than or equal to salaryMin', 422);
   }
 };
 
 export const getAllJobs = async (query) => {
-  const { q, category, location, type, page = 1, limit = 10, sortBy = "createdAt", order = "desc" } =
-    query;
+  const {
+    q,
+    category,
+    location,
+    type,
+    page = 1,
+    limit = 10,
+    sortBy = 'createdAt',
+    order = 'desc',
+  } = query;
 
   const filters = buildJobFilters({ q, category, location, type });
   const skip = (page - 1) * limit;
-  const sort = { [sortBy]: order === "asc" ? 1 : -1 };
+  const sort = { [sortBy]: order === 'asc' ? 1 : -1 };
 
   const [total, jobs] = await Promise.all([
     Job.countDocuments(filters),
-    Job.find(filters).populate("applicationCount").sort(sort).skip(skip).limit(limit),
+    Job.find(filters).populate('applicationCount').sort(sort).skip(skip).limit(limit),
   ]);
 
   return {
@@ -55,9 +65,9 @@ export const getAllJobs = async (query) => {
 };
 
 export const getJobById = async (id) => {
-  const job = await Job.findOne({ _id: id, isActive: true }).populate("applicationCount");
+  const job = await Job.findOne({ _id: id, isActive: true }).populate('applicationCount');
   if (!job) {
-    throw new AppError("Job not found", 404);
+    throw new AppError('Job not found', 404);
   }
 
   return job;
@@ -71,7 +81,7 @@ export const createJob = async (payload) => {
 export const updateJob = async (id, payload) => {
   const job = await Job.findById(id);
   if (!job) {
-    throw new AppError("Job not found", 404);
+    throw new AppError('Job not found', 404);
   }
 
   const nextSalaryMin = payload.salaryMin ?? job.salaryMin;
@@ -92,7 +102,7 @@ export const deleteJob = async (id) => {
   );
 
   if (!job) {
-    throw new AppError("Job not found", 404);
+    throw new AppError('Job not found', 404);
   }
 
   return job;
