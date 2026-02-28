@@ -1,6 +1,5 @@
 // server.js — Entry point: imports the Express app and starts listening
 import app from './src/app.js';
-import { connectDB } from './src/config/db.js';
 import { env } from './src/config/env.js';
 import logger from './src/utils/logger.js';
 
@@ -16,13 +15,6 @@ process.on('uncaughtException', (error) => {
 
 const PORT = env.PORT;
 
-connectDB()
-  .then(() => {
-    app.listen(PORT, () => {
-      logger.info(`Server listening on port ${PORT}`);
-    });
-  })
-  .catch((error) => {
-    logger.error('Failed to connect to database', error);
-    process.exit(1);
-  });
+app.listen(PORT, () => {
+  logger.info(`Server listening on port ${PORT}`);
+});

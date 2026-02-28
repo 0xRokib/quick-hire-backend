@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import mongoose from 'mongoose';
 import morgan from 'morgan';
+import { connectDB } from './config/db.js';
 import { env } from './config/env.js';
 import errorHandler from './middleware/errorHandler.js';
 import notFound from './middleware/notFound.js';
@@ -12,6 +13,9 @@ import applicationsRouter, { jobApplicationsRouter } from './modules/application
 import authRouter from './modules/auth/index.js';
 import jobsRouter from './modules/jobs/index.js';
 import { morganStream } from './utils/logger.js';
+
+// Initialize DB connection (async, will reconnect as needed)
+connectDB();
 
 const app = express();
 

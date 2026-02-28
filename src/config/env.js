@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import { z } from 'zod';
 dotenv.config();
 const envSchema = z.object({
-  PORT: z.coerce.number().int().positive(),
+  PORT: z.coerce.number().int().positive().default(5000),
   NODE_ENV: z.enum(['development', 'test', 'production']),
   MONGO_URI: z.string().min(1),
   ALLOWED_ORIGIN: z.string().url(),
@@ -12,10 +12,18 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32),
   JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
-  AUTH_LOGIN_WINDOW_MS: z.coerce.number().int().positive().default(15 * 60 * 1000),
+  AUTH_LOGIN_WINDOW_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(15 * 60 * 1000),
   AUTH_LOGIN_MAX_REQUESTS: z.coerce.number().int().positive().default(20),
   AUTH_ACCOUNT_MAX_FAILURES: z.coerce.number().int().positive().default(5),
-  AUTH_ACCOUNT_LOCK_MS: z.coerce.number().int().positive().default(15 * 60 * 1000),
+  AUTH_ACCOUNT_LOCK_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(15 * 60 * 1000),
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly']),
 });
 const parsed = envSchema.safeParse(process.env);
