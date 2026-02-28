@@ -22,7 +22,18 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: env.NODE_ENV === 'production' ? env.ALLOWED_ORIGIN : '*',
+    origin: (origin, callback) => {
+      // In production, split the ALLOWED_ORIGIN by comma in case multiple sites are allowed
+      const allowedOrigins = env.ALLOWED_ORIGIN.split(',').map((o) => o.trim());
+
+      // Allow requests with no origin (like mobile apps or curl) or if origin matches
+      if (!origin || allowedOrigins.includes(origin) || env.NODE_ENV !== 'production') {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
   }),
 );
 app.use(express.json({ limit: '10kb' }));
