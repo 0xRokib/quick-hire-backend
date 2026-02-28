@@ -26,6 +26,11 @@ app.use(
       // In production, split the ALLOWED_ORIGIN by comma in case multiple sites are allowed
       const allowedOrigins = env.ALLOWED_ORIGIN.split(',').map((o) => o.trim());
 
+      // If allowedOrigins includes '*', allow all
+      if (allowedOrigins.includes('*')) {
+        return callback(null, true);
+      }
+
       // Allow requests with no origin (like mobile apps or curl) or if origin matches
       if (!origin || allowedOrigins.includes(origin) || env.NODE_ENV !== 'production') {
         callback(null, true);
@@ -34,8 +39,11 @@ app.use(
       }
     },
     credentials: true,
+    optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
   }),
 );
+// Handle preflight manually for all routes if needed, though cors middleware usually does this
+app.options('*', cors());
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
 if (env.NODE_ENV === 'production') {
