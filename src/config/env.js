@@ -6,7 +6,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(5000),
   NODE_ENV: z.enum(['development', 'test', 'production']),
   MONGO_URI: z.string().min(1),
-  ALLOWED_ORIGIN: z.string().min(1), // Can be a comma-separated list of URLs
+  ALLOWED_ORIGIN: z.string().min(1),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive(),
   RATE_LIMIT_MAX: z.coerce.number().int().positive(),
   JWT_SECRET: z.string().min(32),

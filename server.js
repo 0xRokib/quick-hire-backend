@@ -1,4 +1,3 @@
-// server.js — Entry point: imports the Express app and starts listening
 import app from './src/app.js';
 import { env } from './src/config/env.js';
 import logger from './src/utils/logger.js';

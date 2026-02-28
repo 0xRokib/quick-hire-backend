@@ -14,7 +14,6 @@ import authRouter from './modules/auth/index.js';
 import jobsRouter from './modules/jobs/index.js';
 import { morganStream } from './utils/logger.js';
 
-// Initialize DB connection (async, will reconnect as needed)
 connectDB();
 
 const app = express();
@@ -23,15 +22,10 @@ app.use(helmet());
 app.use(
   cors({
     origin: (origin, callback) => {
-      // In production, split the ALLOWED_ORIGIN by comma in case multiple sites are allowed
       const allowedOrigins = env.ALLOWED_ORIGIN.split(',').map((o) => o.trim());
-
-      // If allowedOrigins includes '*', allow all
       if (allowedOrigins.includes('*')) {
         return callback(null, true);
       }
-
-      // Allow requests with no origin (like mobile apps or curl) or if origin matches
       if (!origin || allowedOrigins.includes(origin) || env.NODE_ENV !== 'production') {
         callback(null, true);
       } else {
@@ -39,10 +33,9 @@ app.use(
       }
     },
     credentials: true,
-    optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
+    optionsSuccessStatus: 200,
   }),
 );
-// Handle preflight manually for all routes if needed, though cors middleware usually does this
 app.options('*', cors());
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -60,9 +53,9 @@ const apiLimiter = rateLimit({
   message: { success: false, error: 'Too many requests, please slow down.' },
 });
 
-// if (env.NODE_ENV === 'production') {
-//   app.use(apiLimiter);
-// }
+if (env.NODE_ENV === 'production') {
+  app.use(apiLimiter);
+}
 
 const healthRouter = express.Router();
 
