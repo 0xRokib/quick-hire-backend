@@ -1,22 +1,13 @@
 // src/utils/logger.js — Winston logger instance
-import fs from "fs";
-import path from "path";
-import winston from "winston";
-import { env } from "../config/env.js";
+import winston from 'winston';
+import { env } from '../config/env.js';
 
 const transports = [];
 
-if (env.NODE_ENV === "production") {
-  const logsDir = path.resolve("logs");
-  fs.mkdirSync(logsDir, { recursive: true });
-
+if (env.NODE_ENV === 'development') {
   transports.push(
-    new winston.transports.File({
-      filename: path.join(logsDir, "combined.log"),
-    }),
-    new winston.transports.File({
-      filename: path.join(logsDir, "error.log"),
-      level: "error",
+    new winston.transports.Console({
+      format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
     }),
   );
 } else {
