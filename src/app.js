@@ -1,7 +1,7 @@
 // src/app.js — Express app factory (no listen)
 import cors from 'cors';
 import express from 'express';
-import rateLimit from 'express-rate-limit';
+// import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import mongoose from 'mongoose';
 import morgan from 'morgan';
@@ -45,6 +45,7 @@ if (env.NODE_ENV === 'production') {
   app.use(morgan('dev'));
 }
 
+/*
 const apiLimiter = rateLimit({
   windowMs: env.RATE_LIMIT_WINDOW_MS,
   limit: env.RATE_LIMIT_MAX,
@@ -56,6 +57,7 @@ const apiLimiter = rateLimit({
 if (env.NODE_ENV === 'production') {
   app.use(apiLimiter);
 }
+*/
 
 const healthRouter = express.Router();
 
